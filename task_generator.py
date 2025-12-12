@@ -71,7 +71,7 @@ class TaskSetGenerator:
             names.append(name)
 
             arrival = random.randint(0, 50)
-            exec_time = random.randint(1, 10)
+            exec_time = random.randint(1, 5)
             deadline = arrival + random.randint(exec_time + 5, 20)
             interval = random.randint(5, 12)
 
