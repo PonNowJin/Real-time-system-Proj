@@ -11,26 +11,37 @@ class TaskSetGenerator:
         self.use_preemption = use_preemption
         self.use_priority = use_priority
         self.use_dependency = use_dependency
+        
+        self.all_task_names = []
 
     # -------------------------
     # helper: advance options
     # -------------------------
-    def _add_optional_fields(self, existing_names):
-            preemptive = None
-            priority = None
-            dependency = []
+    def _add_optional_fields(self, all_task_names):
+        preemptive = None
+        priority = None
+        dependencies = []
 
-            if self.use_preemption:
-                preemptive = random.choice([True, False])
+        # Preemption
+        if self.use_preemption:
+            preemptive = random.choice([True, False])
 
-            if self.use_priority:
-                priority = random.randint(1, 10)
+        # Priority
+        if self.use_priority:
+            priority = random.randint(1, 10)
 
-            if self.use_dependency and existing_names:
-                if random.random() < 0.2:   # 20% chance
-                    dependency.append(random.choice(existing_names))
+        # Dependency (0 ~ 2 個)
+        if self.use_dependency and all_task_names:
 
-            return preemptive, priority, dependency
+            # 20% 機率有依賴
+            if random.random() < 0.2:
+                dep_count = random.randint(1, min(2, len(all_task_names)))
+
+                # 隨機挑選多個不同的依賴項
+                dependencies = random.sample(all_task_names, dep_count)
+
+        return preemptive, priority, dependencies
+
 
 
     # -------------------------
@@ -38,18 +49,17 @@ class TaskSetGenerator:
     # -------------------------
     def generate_periodic(self, n):
         tasks = {}
-        names = []
 
         for i in range(1, n+1):
             name = f"p{i}"
-            names.append(name)
-
+            self.all_task_names.append(name)
+            
             arrival = random.randint(0, 50)
             exec_time = random.randint(1, 5)
             period = period = random.randint(5, 25)
             deadline = random.randint(exec_time + 1, period)
 
-            preemptive, priority, dep = self._add_optional_fields(names[:-1])
+            preemptive, priority, dep = self._add_optional_fields(self.all_task_names[:-1])
 
             t = PeriodicTask(
                 name, arrival, exec_time, period, deadline,
@@ -64,18 +74,17 @@ class TaskSetGenerator:
     # -------------------------
     def generate_sporadic(self, n):
         tasks = {}
-        names = []
 
         for i in range(1, n+1):
             name = f"s{i}"
-            names.append(name)
+            self.all_task_names.append(name)
 
             arrival = random.randint(0, 50)
             exec_time = random.randint(1, 5)
             deadline = arrival + random.randint(exec_time + 5, 20)
             interval = random.randint(5, 12)
 
-            preemptive, priority, dep = self._add_optional_fields(names[:-1])
+            preemptive, priority, dep = self._add_optional_fields(self.all_task_names[:-1])
 
             t = SporadicTask(
                 name, arrival, exec_time, deadline, interval,
@@ -90,17 +99,16 @@ class TaskSetGenerator:
     # -------------------------
     def generate_aperiodic(self, n):
         tasks = {}
-        names = []
 
         for i in range(1, n+1):
             name = f"a{i}"
-            names.append(name)
+            self.all_task_names.append(name)
 
             arrival = random.randint(0, 50)
             exec_time = random.randint(1, 5)
             deadline = arrival + random.randint(exec_time + 5, 30)
 
-            preemptive, priority, dep = self._add_optional_fields(names[:-1])
+            preemptive, priority, dep = self._add_optional_fields(self.all_task_names[:-1])
 
             t = AperiodicTask(
                 name, arrival, exec_time, deadline,
